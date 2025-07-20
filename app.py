@@ -81,18 +81,22 @@ def obter_dados_do_usuario():
     # --- Seção de Hábitos Alimentares ---
     st.sidebar.markdown("### 🍎 Hábitos Alimentares")
     comida_calorica_pt = st.sidebar.radio('Come alimentos de alta caloria com frequência?', options=list(dicionario_traducao_sim_nao.values()), horizontal=True)
-    consumo_vegetais = st.sidebar.slider('Consumo de vegetais (1: Nunca, 3: Sempre)', 1, 3, 2)
+    consumo_vegetais = st.sidebar.slider('Frequência de consumo de vegetais', 1, 3, 2,
+        help="1 = Nunca, 2 = Às vezes, 3 = Sempre")
     num_refeicoes = st.sidebar.slider('Nº de refeições principais diárias', 1, 4, 3)
     come_entre_refeicoes_pt = st.sidebar.selectbox('Come entre as refeições?', options=list(dicionario_traducao_refeicoes.values()))
-    consumo_agua = st.sidebar.slider('Consumo de água (1: <1L, 3: >2L)', 1, 3, 2)
+    consumo_agua = st.sidebar.slider('Consumo diário de água', 1, 3, 2,
+        help="1 = Menos de 1 Litro, 2 = Entre 1 e 2 Litros, 3 = Mais de 2 Litros")
     monitora_calorias_pt = st.sidebar.radio('Monitora as calorias que ingere?', options=list(dicionario_traducao_sim_nao.values()), horizontal=True)
     consumo_alcool_pt = st.sidebar.selectbox('Frequência de consumo de álcool?', options=list(dicionario_traducao_alcool.values()))
 
     # --- Seção de Hábitos de Vida ---
     st.sidebar.markdown("### 🏃 Hábitos de Vida")
     fumante_pt = st.sidebar.radio('Você fuma?', options=list(dicionario_traducao_sim_nao.values()), horizontal=True)
-    freq_atividade_fisica = st.sidebar.slider('Frequência de atividade física (dias/semana)', 0, 3, 1)
-    tempo_telas = st.sidebar.slider('Tempo em telas (0: 0-2h, 2: >5h)', 0, 2, 1)
+    freq_atividade_fisica = st.sidebar.slider('Frequência de atividade física', 0, 3, 1,
+        help="0 = Nenhuma, 1 = 1 a 2 dias/semana, 2 = 2 a 4 dias/semana, 3 = 4 a 5 dias/semana")
+    tempo_telas = st.sidebar.slider('Tempo diário em telas (celular, TV, etc)', 0, 2, 1,
+        help="0 = 0 a 2 horas, 1 = 3 a 5 horas, 2 = Mais de 5 horas")
     transporte_pt = st.sidebar.selectbox('Transporte principal?', options=list(dicionario_traducao_transporte.values()))
 
     # Converte as seleções em português de volta para inglês para o modelo.
