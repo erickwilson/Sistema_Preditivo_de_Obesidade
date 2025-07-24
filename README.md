@@ -1,5 +1,7 @@
 # 🩺 Sistema Preditivo de Obesidade - Tech Challenge
 
+https://sistema-preditivo-obesidade.streamlit.app/
+
 Este repositório contém a solução completa para o Tech Challenge, que consiste no desenvolvimento de um sistema de Machine Learning para prever o nível de obesidade de um paciente com base em suas características físicas, hábitos alimentares e estilo de vida.
 
 O projeto abrange todo o pipeline de ciência de dados, desde a análise exploratória e treinamento do modelo até o deploy de uma aplicação web interativa e um painel analítico para extração de insights.
