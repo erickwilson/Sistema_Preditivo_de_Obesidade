@@ -17,7 +17,7 @@ def carregar_dados():
     # Renomear colunas para consistência
     df.rename(columns={'family_history_with_overweight': 'family_history', 'Obesity': 'Obesity'}, inplace=True, errors='ignore')
 
-    # Dicionários para tradução dos valores
+     # Dicionários para tradução dos valores
     traducao_sim_nao = {'yes': 'Sim', 'no': 'Não'}
     traducao_genero = {'Male': 'Masculino', 'Female': 'Feminino'}
     traducao_nivel_obesidade = {
@@ -30,10 +30,17 @@ def carregar_dados():
         'Obesity_Type_III': 'Obesidade Tipo III'
     }
 
+    traducao_alcool = {
+        'no': 'Não',
+        'Sometimes': 'Às vezes',
+        'Frequently': 'Frequentemente',
+        'Always': 'Sempre'
+    }
     # Aplicando as traduções para os gráficos
     df['Tem_Historico_Familiar'] = df['family_history'].map(traducao_sim_nao)
     df['Genero'] = df['Gender'].map(traducao_genero)
-    df['Nivel_Obesidade'] = df['Obesity'].map(traducao_nivel_obesidade)
+    df["Nivel_Obesidade"] = df["Obesity"].map(traducao_nivel_obesidade)
+    df["Consumo_Alcool"] = df["CALC"].map(traducao_alcool) 
     
     # Definindo a ordem correta das categorias para os gráficos
     ordem_niveis = list(traducao_nivel_obesidade.values())
