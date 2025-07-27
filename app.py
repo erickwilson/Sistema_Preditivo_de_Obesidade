@@ -1,53 +1,50 @@
-# app.py
+# app.py — Interface Web para Previsão de Obesidade com Streamlit e XGBoost
 
 # --- 1. Importação das Bibliotecas ---
-# streamlit: a biblioteca principal para criar a interface web.
-# pandas: para criar o DataFrame com os dados do usuário.
-# joblib: para carregar nosso modelo e encoders que foram salvos anteriormente.
+# streamlit: biblioteca para a interface web.
+# pandas: manipulação dos dados de entrada e saída.
+# joblib: carregamento do modelo e encoders treinados.
 import streamlit as st
 import pandas as pd
 import joblib
 
 # --- 2. Configuração Inicial da Página ---
-# Este comando configura o título que aparece na aba do navegador e o ícone.
-# Deve ser o primeiro comando do Streamlit a ser executado no script.
+# Define título da aba, ícone e layout da interface Streamlit.
 st.set_page_config(
     page_title="Previsão de Obesidade",
-    page_icon="🩺",  # Ícone de estetoscópio
-    layout="centered" # Centraliza o conteúdo na página
+    page_icon="🩺",
+    layout="centered"
 )
 
 # --- 3. Carregamento do Modelo e Encoders ---
-# Usamos uma função com o decorador @st.cache_resource para que o modelo
-# seja carregado apenas uma vez, otimizando a performance da aplicação.
+# Usa cache para evitar recarregamento desnecessário dos arquivos.
 @st.cache_resource
-def carregar_modelo_e_encoders():
-    """
-    Carrega o modelo de Machine Learning e os encoders salvos pelo script de treinamento.
-    Retorna None se os arquivos não forem encontrados.
-    """
+def load_model_and_encoders():
+    """Carrega o modelo treinado e os encoders salvos."""
     try:
         modelo_carregado = joblib.load('modelo_obesidade.pkl')
         encoders_carregados = joblib.load('encoders.pkl')
         return modelo_carregado, encoders_carregados
     except FileNotFoundError:
-        st.error("ERRO: Arquivos 'modelo_obesidade.pkl' ou 'encoders.pkl' não encontrados.")
-        st.error("Por favor, execute o script 'treinamento_modelo.py' primeiro para gerar os arquivos.")
+        st.error("Arquivos 'modelo_obesidade.pkl' ou 'encoders.pkl' não encontrados.")
+        st.error("Execute o script de treinamento antes de iniciar esta aplicação.")
         return None, None
 
-# Carrega os artefatos na memória.
-modelo, mapeamento_encoders = carregar_modelo_e_encoders()
+# Carrega modelo e encoders em memória
+modelo, todos_os_encoders = load_model_and_encoders()
 
 # --- 4. Dicionários para Tradução da Interface ---
-# Estes dicionários ajudam a traduzir a interface para o português,
-# enquanto mantêm os valores em inglês que o modelo espera.
+# Dicionários para tradução dos dados exibidos ao usuário (português) e enviados ao modelo (inglês).
 dicionario_traducao_genero = {'Male': 'Masculino', 'Female': 'Feminino'}
 dicionario_traducao_sim_nao = {'yes': 'Sim', 'no': 'Não'}
 dicionario_traducao_refeicoes = {'no': 'Não', 'Sometimes': 'Às vezes', 'Frequently': 'Frequentemente', 'Always': 'Sempre'}
-dicionario_traducao_alcool = {'no': 'Não', 'Sometimes': 'Às vezes', 'Frequently': 'Frequentemente', 'Always': 'Sempre'}
-dicionario_traducao_transporte = {'Automobile': 'Automóvel', 'Motorbike': 'Moto', 'Bike': 'Bicicleta', 'Public_Transportation': 'Transporte Público', 'Walking': 'A pé'}
+dicionario_traducao_alcool = dicionario_traducao_refeicoes
+dicionario_traducao_transporte = {
+    'Automobile': 'Automóvel', 'Motorbike': 'Moto', 'Bike': 'Bicicleta',
+    'Public_Transportation': 'Transporte Público', 'Walking': 'A pé'
+}
 
-# Dicionário para traduzir o resultado final do modelo.
+# Tradução das classes de saída do modelo
 dicionario_traducao_previsao = {
     'Insufficient_Weight': 'Peso Insuficiente',
     'Normal_Weight': 'Peso Normal',
@@ -60,138 +57,145 @@ dicionario_traducao_previsao = {
 
 # --- 5. Construção da Interface Gráfica (UI) ---
 st.title("🩺 Sistema Preditivo de Obesidade")
-st.markdown("Insira os dados do paciente na barra lateral à esquerda para obter uma previsão sobre o nível de obesidade.")
+st.markdown("Utilize os campos da barra lateral para inserir os dados do paciente e obter uma previsão do nível de obesidade.")
 
-# A barra lateral (sidebar) é usada para agrupar os controles de entrada.
+# Cria barra lateral com campos de entrada
 st.sidebar.header("Parâmetros do Paciente")
 
 def obter_dados_do_usuario():
     """
-    Cria todos os campos de entrada na barra lateral e coleta os dados do usuário.
-    Retorna dois dicionários: um para o modelo (em inglês) e um para exibição (em português).
+    Cria os campos de entrada na barra lateral e retorna os dados em dois formatos:
+    - Um DataFrame para o modelo (em inglês)
+    - Um dicionário para exibição (em português)
     """
-    # --- Seção de Informações Pessoais ---
+    # --- Informações Pessoais ---
     st.sidebar.markdown("### 🧍 Informações Pessoais")
     genero_pt = st.sidebar.selectbox('Gênero', options=list(dicionario_traducao_genero.values()))
     idade = st.sidebar.slider('Idade', 14, 100, 25)
-    altura_m = st.sidebar.slider('Altura (em metros)', 1.20, 2.20, 1.70, 0.01)
-    peso_kg = st.sidebar.slider('Peso (em kgs)', 30.0, 200.0, 70.0, 0.5)
+    altura_m = st.sidebar.slider('Altura (m)', 1.20, 2.20, 1.70, 0.01)
+    peso_kg = st.sidebar.slider('Peso (kg)', 30.0, 200.0, 70.0, 0.5)
     historia_familiar_pt = st.sidebar.radio('Histórico familiar de sobrepeso?', options=list(dicionario_traducao_sim_nao.values()), horizontal=True)
 
-    # --- Seção de Hábitos Alimentares ---
+    # --- Hábitos Alimentares ---
     st.sidebar.markdown("### 🍎 Hábitos Alimentares")
-    comida_calorica_pt = st.sidebar.radio('Come alimentos de alta caloria com frequência?', options=list(dicionario_traducao_sim_nao.values()), horizontal=True)
-    consumo_vegetais = st.sidebar.slider('Frequência de consumo de vegetais', 1, 3, 2,
-        help="1 = Nunca, 2 = Às vezes, 3 = Sempre")
-    num_refeicoes = st.sidebar.slider('Nº de refeições principais diárias', 1, 4, 3)
+    comida_calorica_pt = st.sidebar.radio('Consumo frequente de alimentos calóricos?', options=list(dicionario_traducao_sim_nao.values()), horizontal=True)
+    consumo_vegetais = st.sidebar.slider('Frequência de consumo de vegetais', 1, 3, 2, help="1 = Nunca, 2 = Às vezes, 3 = Sempre")
+    num_refeicoes = st.sidebar.slider('Nº de refeições diárias', 1, 4, 3)
     come_entre_refeicoes_pt = st.sidebar.selectbox('Come entre as refeições?', options=list(dicionario_traducao_refeicoes.values()))
-    consumo_agua = st.sidebar.slider('Consumo diário de água', 1, 3, 2,
-        help="1 = Menos de 1 Litro, 2 = Entre 1 e 2 Litros, 3 = Mais de 2 Litros")
-    monitora_calorias_pt = st.sidebar.radio('Monitora as calorias que ingere?', options=list(dicionario_traducao_sim_nao.values()), horizontal=True)
-    consumo_alcool_pt = st.sidebar.selectbox('Frequência de consumo de álcool?', options=list(dicionario_traducao_alcool.values()))
+    consumo_agua = st.sidebar.slider('Consumo de água por dia', 1, 3, 2, help="1 = <1L, 2 = 1-2L, 3 = >2L")
+    monitora_calorias_pt = st.sidebar.radio('Monitora calorias?', options=list(dicionario_traducao_sim_nao.values()), horizontal=True)
+    consumo_alcool_pt = st.sidebar.selectbox('Frequência de consumo de álcool', options=list(dicionario_traducao_alcool.values()))
 
-    # --- Seção de Hábitos de Vida ---
+    # --- Hábitos de Vida ---
     st.sidebar.markdown("### 🏃 Hábitos de Vida")
-    fumante_pt = st.sidebar.radio('Você fuma?', options=list(dicionario_traducao_sim_nao.values()), horizontal=True)
-    freq_atividade_fisica = st.sidebar.slider('Frequência de atividade física', 0, 3, 1,
-        help="0 = Nenhuma, 1 = 1 a 2 dias/semana, 2 = 2 a 4 dias/semana, 3 = 4 a 5 dias/semana")
-    tempo_telas = st.sidebar.slider('Tempo diário em telas (celular, TV, etc)', 0, 2, 1,
-        help="0 = 0 a 2 horas, 1 = 3 a 5 horas, 2 = Mais de 5 horas")
-    transporte_pt = st.sidebar.selectbox('Transporte principal?', options=list(dicionario_traducao_transporte.values()))
+    fumante_pt = st.sidebar.radio('Fumante?', options=list(dicionario_traducao_sim_nao.values()), horizontal=True)
+    freq_atividade_fisica = st.sidebar.slider('Frequência de atividade física (semana)', 0, 3, 1, help="0 = Nenhuma, 1 = 1-2x, 2 = 2-4x, 3 = 4-5x")
+    tempo_telas = st.sidebar.slider('Tempo em telas por dia', 0, 2, 1, help="0 = 0-2h, 1 = 3-5h, 2 = >5h")
+    transporte_pt = st.sidebar.selectbox('Principal meio de transporte', options=list(dicionario_traducao_transporte.values()))
 
-    # Converte as seleções em português de volta para inglês para o modelo.
-    genero_en = [k for k, v in dicionario_traducao_genero.items() if v == genero_pt][0]
-    historia_familiar_en = [k for k, v in dicionario_traducao_sim_nao.items() if v == historia_familiar_pt][0]
-    comida_calorica_en = [k for k, v in dicionario_traducao_sim_nao.items() if v == comida_calorica_pt][0]
-    come_entre_refeicoes_en = [k for k, v in dicionario_traducao_refeicoes.items() if v == come_entre_refeicoes_pt][0]
-    monitora_calorias_en = [k for k, v in dicionario_traducao_sim_nao.items() if v == monitora_calorias_pt][0]
-    consumo_alcool_en = [k for k, v in dicionario_traducao_alcool.items() if v == consumo_alcool_pt][0]
-    fumante_en = [k for k, v in dicionario_traducao_sim_nao.items() if v == fumante_pt][0]
-    transporte_en = [k for k, v in dicionario_traducao_transporte.items() if v == transporte_pt][0]
+    # Conversão para inglês (valores esperados pelo modelo)
+    def traduzir(valor_pt, dicionario): return [k for k, v in dicionario.items() if v == valor_pt][0]
+    
+    # Cálculo do IMC (adicionado nesta nova versão)
+    imc = peso_kg / (altura_m ** 2)
 
-    # Dicionário com os dados no formato que o modelo espera (em inglês).
-    dados_para_modelo = {'Gender': genero_en, 'Age': idade, 'Height': altura_m, 'Weight': peso_kg, 'family_history_with_overweight': historia_familiar_en, 'FAVC': comida_calorica_en, 'FCVC': consumo_vegetais, 'NCP': num_refeicoes, 'CAEC': come_entre_refeicoes_en, 'SMOKE': fumante_en, 'CH2O': consumo_agua, 'SCC': monitora_calorias_en, 'FAF': freq_atividade_fisica, 'TUE': tempo_telas, 'CALC': consumo_alcool_en, 'MTRANS': transporte_en}
-    
-    # Dicionário com os dados formatados para exibição na tela (em português).
-    dados_para_exibicao = {'Gênero': genero_pt, 'Idade': idade, 'Altura': altura_m, 'Peso': peso_kg, 'Histórico Familiar de Sobrepeso': historia_familiar_pt, 'Consumo Frequente de Alim. Calóricos': comida_calorica_pt, 'Consumo de Vegetais': consumo_vegetais, 'Nº de Refeições Principais': num_refeicoes, 'Come entre Refeições': come_entre_refeicoes_pt, 'Fumante': fumante_pt, 'Consumo de Água': consumo_agua, 'Monitora Calorias': monitora_calorias_pt, 'Atividade Física': freq_atividade_fisica, 'Tempo em Dispositivos': tempo_telas, 'Consumo de Álcool': consumo_alcool_pt, 'Transporte Principal': transporte_pt}
-    
-    return pd.DataFrame(dados_para_modelo, index=[0]), dados_para_exibicao
+    dados_modelo = {
+        'Gender': traduzir(genero_pt, dicionario_traducao_genero),
+        'Age': idade,
+        'Height': altura_m,
+        'Weight': peso_kg,
+        'family_history': traduzir(historia_familiar_pt, dicionario_traducao_sim_nao),
+        'FAVC': traduzir(comida_calorica_pt, dicionario_traducao_sim_nao),
+        'FCVC': consumo_vegetais,
+        'NCP': num_refeicoes,
+        'CAEC': traduzir(come_entre_refeicoes_pt, dicionario_traducao_refeicoes),
+        'SMOKE': traduzir(fumante_pt, dicionario_traducao_sim_nao),
+        'CH2O': consumo_agua,
+        'SCC': traduzir(monitora_calorias_pt, dicionario_traducao_sim_nao),
+        'FAF': freq_atividade_fisica,
+        'TUE': tempo_telas,
+        'CALC': traduzir(consumo_alcool_pt, dicionario_traducao_alcool),
+        'MTRANS': traduzir(transporte_pt, dicionario_traducao_transporte),
+        'IMC': imc
+    }
+
+    dados_exibicao = {
+        'Gênero': genero_pt, 'Idade': idade, 'Altura': altura_m, 'Peso': peso_kg,
+        'IMC Calculado': f'{imc:.2f}', 'Histórico Familiar': historia_familiar_pt,
+        'Alimentos Calóricos': comida_calorica_pt, 'Vegetais': consumo_vegetais,
+        'Refeições': num_refeicoes, 'Lanches': come_entre_refeicoes_pt, 'Fumante': fumante_pt,
+        'Água (L/dia)': consumo_agua, 'Monitora Calorias': monitora_calorias_pt,
+        'Atividade Física': freq_atividade_fisica, 'Tempo em Telas': tempo_telas,
+        'Álcool': consumo_alcool_pt, 'Transporte': transporte_pt
+    }
+
+    return pd.DataFrame(dados_modelo, index=[0]), dados_exibicao
 
 # --- 6. Lógica Principal da Aplicação ---
-# A aplicação só continua se o modelo e os encoders foram carregados com sucesso.
-if modelo and mapeamento_encoders:
-    # Coleta os dados do usuário a partir da barra lateral.
-    dataframe_modelo, dicionario_exibicao = obter_dados_do_usuario()
+if modelo and todos_os_encoders:
+    df_modelo, exibicao = obter_dados_do_usuario()
 
-    # --- Seção de Aviso de Confiabilidade ---
-    limites_originais_treino = {'Age': 62, 'Weight': 173, 'Height': 1.98}
-    if (dicionario_exibicao['Idade'] > limites_originais_treino['Age'] or
-        dicionario_exibicao['Peso'] > limites_originais_treino['Weight'] or
-        dicionario_exibicao['Altura'] > limites_originais_treino['Height']):
-        st.warning(
-            "**Atenção:** Os valores de Idade, Peso ou Altura inseridos estão fora da faixa de dados "
-            "utilizada para treinar o modelo. A previsão pode ter uma confiabilidade menor."
-        )
+    # Verifica se os valores excedem os limites de treino do modelo
+    limites_treino = {'Age': 62, 'Weight': 173, 'Height': 1.98}
+    if (exibicao['Idade'] > limites_treino['Age'] or
+        exibicao['Peso'] > limites_treino['Weight'] or
+        exibicao['Altura'] > limites_treino['Height']):
+        st.warning("Os valores inseridos excedem os limites observados durante o treinamento. A precisão da previsão pode ser afetada.")
 
-    # Cria uma seção expansível para mostrar o resumo dos dados inseridos.
-    with st.expander("Ver Resumo dos Dados Fornecidos", expanded=False):
+    # Exibe dados inseridos pelo usuário em duas colunas
+    with st.expander("Resumo dos Dados Informados"):
         col1, col2 = st.columns(2)
-        itens_dicionario = list(dicionario_exibicao.items())
-        ponto_medio = len(itens_dicionario) // 2
-        with col1:
-            for chave, valor in itens_dicionario[:ponto_medio]:
-                st.markdown(f"**{chave}:** {valor}")
-        with col2:
-            for chave, valor in itens_dicionario[ponto_medio:]:
-                st.markdown(f"**{chave}:** {valor}")
+        lista = list(exibicao.items())
+        for i, (chave, valor) in enumerate(lista):
+            (col1 if i < len(lista)//2 else col2).markdown(f"**{chave}:** {valor}")
 
-    # Adiciona um espaço e centraliza o botão de predição.
     st.write("")
-    _ , coluna_botao, _ = st.columns([1, 2, 1])
-    with coluna_botao:
-        # Se o botão for clicado, o código dentro do 'if' é executado.
+    _, botao, _ = st.columns([1, 2, 1])
+    with botao:
         if st.button('**Realizar Predição**', use_container_width=True):
-            
-            # Prepara os dados para o modelo, aplicando a mesma transformação numérica do treino.
-            dataframe_encoded = dataframe_modelo.copy()
-            for coluna, encoder in mapeamento_encoders.items():
-                if coluna in dataframe_encoded.columns:
-                    # Transforma os dados usando o encoder correto.
-                    if hasattr(encoder, 'categories_'): # OrdinalEncoder
-                        dataframe_encoded[coluna] = encoder.transform(dataframe_encoded[[coluna]])
-                    else: # LabelEncoder
-                        dataframe_encoded[coluna] = encoder.transform(dataframe_encoded[coluna])
 
-            # --- Execução da Predição ---
-            previsao_bruta = modelo.predict(dataframe_encoded)[0]
-            previsao_probabilidades = modelo.predict_proba(dataframe_encoded)
-            
-            # Traduz o resultado da previsão para português.
-            resultado_final_traduzido = dicionario_traducao_previsao.get(previsao_bruta, previsao_bruta)
-            # Calcula a confiança do modelo na previsão.
-            confianca_previsao = previsao_probabilidades.max() * 100
+            # --- Preparação para Predição ---
+            encoders = todos_os_encoders.copy()
+            encoder_alvo = encoders.pop('encoder_alvo', None)
 
-            # --- Exibição dos Resultados ---
-            st.subheader('Resultado da Predição')
-            st.success(f'O nível de obesidade previsto é: **{resultado_final_traduzido}**')
-            st.info(f'Confiança do modelo nesta previsão: **{confianca_previsao:.2f}%**')
+            if not encoder_alvo:
+                st.error("Encoder do alvo não encontrado.")
+            else:
+                # Codificação dos dados categóricos
+                df_encoded = df_modelo.copy()
+                for coluna, encoder in encoders.items():
+                    if coluna in df_encoded.columns:
+                        if hasattr(encoder, 'categories_'):
+                            df_encoded[coluna] = encoder.transform(df_encoded[[coluna]])
+                        else:
+                            df_encoded[coluna] = encoder.transform(df_encoded[coluna])
 
-            st.subheader('Confiança do Modelo por Categoria')
-            
-            # Prepara os dados para o gráfico de barras ordenado.
-            df_probabilidades = pd.DataFrame({
-                'Classe': modelo.classes_, 
-                'Probabilidade': previsao_probabilidades[0] * 100  # Multiplica por 100 para exibir em porcentagem
-            })
-            df_probabilidades['Classe Traduzida'] = df_probabilidades['Classe'].map(dicionario_traducao_previsao)
-            
-            ordem_grafico = list(dicionario_traducao_previsao.values())
-            df_probabilidades['Classe Traduzida'] = pd.Categorical(df_probabilidades['Classe Traduzida'], categories=ordem_grafico, ordered=True)
-            df_probabilidades = df_probabilidades.sort_values('Classe Traduzida')
-            
-            # Exibe o gráfico de barras.
-            st.bar_chart(df_probabilidades, x='Classe Traduzida', y='Probabilidade')
+                # --- Realiza a predição ---
+                pred_numerica = modelo.predict(df_encoded)[0]
+                pred_label = encoder_alvo.inverse_transform([pred_numerica])[0]
+                pred_proba = modelo.predict_proba(df_encoded)
 
-# Se o modelo não puder ser carregado, exibe um aviso final.
+                # Exibição dos resultados
+                pred_pt = dicionario_traducao_previsao.get(pred_label, pred_label)
+                confianca = pred_proba.max() * 100
+
+                st.subheader("Resultado da Predição")
+                st.success(f"Nível previsto: **{pred_pt}**")
+                st.info(f"Confiança do modelo: **{confianca:.2f}%**")
+
+                # --- Exibição do gráfico de probabilidades ---
+                st.subheader("Distribuição das Probabilidades")
+                df_proba = pd.DataFrame({
+                    'Classe': encoder_alvo.classes_,
+                    'Probabilidade': pred_proba[0] * 100
+                })
+                df_proba['Classe Traduzida'] = df_proba['Classe'].map(dicionario_traducao_previsao)
+                ordem = list(dicionario_traducao_previsao.values())
+                df_proba['Classe Traduzida'] = pd.Categorical(df_proba['Classe Traduzida'], categories=ordem, ordered=True)
+                df_proba = df_proba.sort_values('Classe Traduzida')
+
+                st.bar_chart(df_proba, x='Classe Traduzida', y='Probabilidade')
+
+# Caso o modelo ou encoders não tenham sido carregados corretamente
 else:
-    st.error("Aplicação não pode ser iniciada. Verifique o carregamento do modelo.")
+    st.error("A aplicação não foi iniciada. Verifique o carregamento do modelo.")
