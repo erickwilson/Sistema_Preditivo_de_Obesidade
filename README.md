@@ -8,6 +8,7 @@ O projeto abrange todo o pipeline de ciência de dados, desde a análise explora
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?style=for-the-badge&logo=python)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.29-red?style=for-the-badge&logo=streamlit)](https://streamlit.io)
+[![Scikit-learn](https://img.shields.io/badge/Scikit--learn-1.3-orange?style=for-the-badge&logo=scikit-learn)](https://scikit-learn.org/)
 [![XGBoost](https://img.shields.io/badge/XGBoost-latest-green?style=for-the-badge&logo=xgboost)](https://xgboost.readthedocs.io/en/stable/)
 
 
