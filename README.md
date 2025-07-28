@@ -9,7 +9,8 @@ O projeto abrange todo o pipeline de ciência de dados, desde a análise explora
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?style=for-the-badge&logo=python)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.29-red?style=for-the-badge&logo=streamlit)](https://streamlit.io)
 [![Scikit-learn](https://img.shields.io/badge/Scikit--learn-1.3-orange?style=for-the-badge&logo=scikit-learn)](https://scikit-learn.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![XGBoost](https://img.shields.io/badge/XGBoost-latest-green?style=for-the-badge&logo=xgboost)](https://xgboost.readthedocs.io/en/stable/)
+
 
 ## 🚀 Funcionalidades
 
@@ -17,7 +18,7 @@ O projeto é dividido em duas principais funcionalidades entregues como uma apli
 
 1.  **Sistema de Previsão Individual:**
     *   Uma interface interativa onde a equipe médica pode inserir os dados de um paciente através de um formulário na barra lateral.
-    *   O sistema utiliza um modelo de `RandomForestClassifier` treinado para prever em qual das 7 categorias de peso o paciente se enquadra.
+    *   O sistema utiliza um modelo de `XGBoostClassifier` treinado para prever em qual das 7 categorias de peso o paciente se enquadra.
     *   Exibe o resultado da previsão de forma clara, junto com a probabilidade de confiança do modelo.
     *   Apresenta um gráfico de barras com a distribuição de probabilidade para todas as classes possíveis, ordenado de forma clínica (de Peso Insuficiente a Obesidade Tipo III).
 
