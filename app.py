@@ -194,7 +194,7 @@ if modelo and todos_os_encoders:
                 df_proba['Classe Traduzida'] = pd.Categorical(df_proba['Classe Traduzida'], categories=ordem, ordered=True)
                 df_proba = df_proba.sort_values('Classe Traduzida')
 
-                st.bar_chart(df_proba, x='Classe Traduzida', y='Probabilidade')
+                st.bar_chart(df_proba, x='Categoria de Peso ', y='Probabilidade')
 
 # Caso o modelo ou encoders não tenham sido carregados corretamente
 else:
