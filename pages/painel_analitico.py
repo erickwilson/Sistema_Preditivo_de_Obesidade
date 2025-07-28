@@ -94,13 +94,14 @@ if dataframe is not None:
         
         # Gráfico de barras empilhado 100%
         fig_alcool = px.histogram(
-            dataframe, 
-            x="Nivel_Obesidade", 
-            color="CALC", 
-            title='Influência do Consumo de Álcool no Nível de Peso',
-            barnorm='percent', # Mostra em percentual
-            text_auto='.2f'
-        )
+    dataframe, 
+    x="Nivel_Obesidade", 
+    color="Consumo_Alcool",  # ← Coluna traduzida
+    title='Influência do Consumo de Álcool no Nível de Peso',
+    barnorm='percent',
+    text_auto='.2f'
+)
+
         fig_alcool.update_layout(xaxis_title="Nível de Peso", yaxis_title="Percentual de Pacientes (%)", legend_title="Frequência de Consumo de Álcool")
         st.plotly_chart(fig_alcool, use_container_width=True)
 
@@ -133,4 +134,3 @@ if dataframe is not None:
 
     - **Relação Idade-Peso:** O Gráfico 4 mostra uma tendência de aumento de peso com a idade. Intervenções preventivas focadas em faixas etárias mais jovens podem ser cruciais para evitar a progressão para níveis mais graves de obesidade na vida adulta.
     """)
-
